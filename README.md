@@ -1,0 +1,2 @@
+# CTU
+CTU bachelor assignments
