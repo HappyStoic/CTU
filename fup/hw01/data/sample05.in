@@ -1,0 +1,10 @@
+(define get-maze
+'(
+(w w w)
+(w 0 w)
+(w w w)
+)
+)
+
+(newline)
+(simulate (list get-maze (list 1 1) 'west) 'step '() 1)

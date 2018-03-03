@@ -1,0 +1,21 @@
+(define get-maze
+'(
+(w w w)
+(w 0 w)
+(w 0 w)
+(w w w)
+)
+)
+
+(define turn-north
+  '(
+    (procedure turn-north
+      (if north?
+          ()
+          (turn-left turn-north)
+      )
+     )
+    )
+)
+(newline)
+(simulate (list get-maze (list 1 2) 'west) 'turn-north turn-north 3)

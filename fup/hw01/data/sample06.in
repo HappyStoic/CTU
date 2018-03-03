@@ -1,0 +1,24 @@
+(define get-maze
+'(
+(w w w )
+(w 0 w)
+(w 0 w)
+(w 0 w)
+(w 0 w)
+(w 0 w)
+(w w w)
+)
+)
+
+(define program
+  '(
+    (procedure go
+      (if wall?
+          (turn-left turn-left)
+          (step go step)
+      )
+     )
+    )
+)
+(newline)
+(simulate (list get-maze (list 1 4) 'south) '(go go) program 2)

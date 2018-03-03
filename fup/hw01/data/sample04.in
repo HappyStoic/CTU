@@ -1,0 +1,23 @@
+(define get-maze
+'(
+(w w w w w w)
+(w 0 0 0 0 w)
+(w w w w w w)
+)
+)
+
+(define program
+  '(
+    (procedure add-one
+      (if mark?
+          (get-mark step add-one turn-180 step turn-180)
+          (put-mark)
+      )
+     )
+    (procedure turn-180
+      (turn-left turn-left)
+    )
+    )
+)
+(newline)
+(simulate (list get-maze (list 4 1) 'west) '(add-one add-one add-one add-one add-one) program 30)

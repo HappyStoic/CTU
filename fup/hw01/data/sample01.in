@@ -1,0 +1,37 @@
+(define get-maze
+'(
+(w w w w w w)
+(w 0 w 0 w w)
+(w 0 w 0 0 w)
+(w 0 0 0 w w)
+(w w w w w w)
+)
+)
+(define right-hand-rule-prg
+  '(
+      (procedure start
+            ( turn-right
+                    (if wall?
+                               ( turn-left
+                                            (if wall?
+                                                             (turn-left
+                                                                                  (if wall?
+                                                                                                          turn-left
+                                                                                                                                  step
+                                                                                                                                                       )
+                                                                                                   )
+                                                                              step
+                                                                                            )
+                                                       )
+                                          step  
+                                                  )
+                            put-mark
+                                    start
+                                          )
+                )   
+          (procedure turn-right (turn-left turn-left turn-left))
+            )
+  )
+
+
+(simulate (list get-maze (list 1 1) 'south) 'start right-hand-rule-prg 3)

@@ -1,0 +1,2 @@
+> ((step turn-left turn-left step step step) (((w w w) (w 0 w) (w 0 w) (w 0 w) (w 0 w) (w 0 w) (w w w)) (1 2) north))
+> 

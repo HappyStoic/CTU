@@ -1,0 +1,11 @@
+(define get-maze
+'(
+(w w w)
+(w 0 w)
+(w 0 w)
+(w w w)
+)
+)
+
+(newline)
+(simulate (list get-maze (list 1 2) 'north) '(step put-mark put-mark turn-left) '() 3)

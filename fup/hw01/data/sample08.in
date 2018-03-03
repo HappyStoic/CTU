@@ -1,0 +1,17 @@
+(define get-maze
+'(
+(w w w)
+(w 3 w)
+(w w w)
+)
+)
+
+(define program
+  '(
+    (procedure setup
+      (if north? (if mark? (get-mark setup) ()) (turn-left setup))
+    )
+    )
+)
+(newline)
+(simulate (list get-maze (list 1 1) 'west) 'setup program 4)
