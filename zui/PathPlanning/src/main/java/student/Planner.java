@@ -9,6 +9,7 @@ import eu.superhub.wp5.planner.planningstructure.GraphNode;
 import java.util.*;
 
 /**
+ * Author: Martin Řepa
  * Description in PlannerInterface
  */
 public class Planner implements PlannerInterface {

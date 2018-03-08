@@ -5,6 +5,7 @@ import eu.superhub.wp5.planner.planningstructure.GraphEdge;
 import eu.superhub.wp5.planner.planningstructure.GraphNode;
 
 /**
+ * Author: Martin Řepa
  * Class Node is wrapping GraphNode with its costs.
  * f(n) = g(n) + h(n)
  */

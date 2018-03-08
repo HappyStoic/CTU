@@ -7,6 +7,7 @@ import java.util.*;
 
 
 /**
+ * Author: Martin Řepa
  * Class representing list with possible next moves. Nodes in Queue are sorted with
  * Node::sumCost, therefore only head is returned when new node is needed.
  */

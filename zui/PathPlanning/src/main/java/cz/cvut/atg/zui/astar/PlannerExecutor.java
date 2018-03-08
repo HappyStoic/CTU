@@ -1,6 +1,5 @@
 package cz.cvut.atg.zui.astar;
 
-import com.sun.beans.editors.DoubleEditor;
 import eu.superhub.wp5.graphcommon.graph.Graph;
 import eu.superhub.wp5.graphcommon.graph.GraphBuilder;
 import eu.superhub.wp5.planner.planningstructure.GraphEdge;
@@ -12,8 +11,6 @@ import student.Planner;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -67,7 +64,7 @@ public class PlannerExecutor {
 
         printPlanProperties(origin,destination,plan);
 
-        exportPlan(newroadGraph, origin, destination, plan);
+//        exportPlan(newroadGraph, origin, destination, plan);
 
     }
 
