@@ -13,7 +13,7 @@ public class AlphaBeta extends Algorithm {
 
     private final int MAX_PLAYER = 0;
 
-    // Caching <Pair<Pair<game, pair<alpha, beta>>, depth>, value> These values defines the state
+    // Caching <Pair<Pair<game, pair<alpha, beta>>, depth>, value> These values define the state
     private HashMap<Pair<Pair<Board, Pair<Integer, Integer>>, Integer>, Integer> maxCache = new HashMap<>();
     private HashMap<Pair<Pair<Board, Pair<Integer, Integer>>, Integer>, Integer> minCache = new HashMap<>();
 
